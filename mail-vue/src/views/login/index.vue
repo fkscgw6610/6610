@@ -6,6 +6,21 @@
       <div class="aurora aurora-2"></div>
       <div class="aurora aurora-3"></div>
       <div class="grid-overlay"></div>
+      <!-- 可爱装饰元素 -->
+      <div class="cute-decor">
+        <div class="moon"></div>
+        <div class="star star-1">✦</div>
+        <div class="star star-2">✧</div>
+        <div class="star star-3">✦</div>
+        <div class="star star-4">✧</div>
+        <div class="star star-5">★</div>
+        <div class="star star-6">✦</div>
+        <div class="cloud cloud-1"></div>
+        <div class="cloud cloud-2"></div>
+        <div class="cloud cloud-3"></div>
+        <div class="planet"></div>
+        <div class="ufo"></div>
+      </div>
     </div>
     <div v-else :style="background"></div>
     <div class="form-wrapper">
@@ -739,47 +754,40 @@ function submitRegister() {
 
 .form-wrapper {
   position: fixed;
-  right: 0;
-  height: 100%;
+  left: 50%;
+  top: 50%;
+  transform: translate(-50%, -50%);
   z-index: 10;
   display: flex;
   align-items: center;
   justify-content: center;
   @media (max-width: 767px) {
     width: 100%;
+    padding: 16px;
   }
 }
 
 .container {
-  background: rgba(12, 18, 40, 0.5);
-  backdrop-filter: blur(22px) saturate(140%);
-  -webkit-backdrop-filter: blur(22px) saturate(140%);
-  padding-left: 40px;
-  padding-right: 40px;
+  background: rgba(12, 18, 40, 0.55);
+  backdrop-filter: blur(24px) saturate(140%);
+  -webkit-backdrop-filter: blur(24px) saturate(140%);
+  padding: 40px 44px;
   display: flex;
   flex-direction: column;
   justify-content: center;
-  width: 460px;
-  height: 100%;
-  border: 1px solid rgba(120, 180, 255, 0.18);
-  border-right: none;
-  box-shadow: -12px 0 60px rgba(0, 0, 0, 0.45), inset 0 0 60px rgba(99, 102, 241, 0.06);
+  width: 440px;
+  border-radius: 24px;
+  border: 1px solid rgba(120, 180, 255, 0.22);
+  box-shadow: 0 24px 80px rgba(0, 0, 0, 0.5), 0 0 60px rgba(99, 102, 241, 0.15), inset 0 0 60px rgba(99, 102, 241, 0.06);
   color: #e6ecff;
   @media (max-width: 1024px) {
-    padding: 24px 22px;
+    padding: 32px 28px;
     width: 400px;
-    margin-left: 18px;
-    border-radius: 20px;
-    border-right: 1px solid rgba(120, 180, 255, 0.18);
   }
   @media (max-width: 767px) {
-    border: 1px solid rgba(120, 180, 255, 0.22);
-    padding: 26px 20px;
-    border-radius: 20px;
-    height: fit-content;
-    width: calc(100% - 36px);
-    margin-right: 18px;
-    margin-left: 18px;
+    padding: 28px 22px;
+    width: calc(100% - 32px);
+    max-width: 380px;
     box-shadow: 0 20px 60px rgba(0, 0, 0, 0.55);
   }
 
@@ -1039,6 +1047,199 @@ function submitRegister() {
   mask-image: radial-gradient(ellipse at 50% 50%, #000 0%, transparent 75%);
   -webkit-mask-image: radial-gradient(ellipse at 50% 50%, #000 0%, transparent 75%);
   pointer-events: none;
+}
+
+/* 可爱装饰元素 */
+.cute-decor {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  z-index: 1;
+}
+
+/* 月亮 */
+.moon {
+  position: absolute;
+  top: 8%;
+  right: 12%;
+  width: 80px;
+  height: 80px;
+  border-radius: 50%;
+  background: radial-gradient(circle at 35% 35%, #fef3c7 0%, #fbbf24 50%, #f59e0b 100%);
+  box-shadow: 0 0 40px rgba(251, 191, 36, 0.5), 0 0 80px rgba(251, 191, 36, 0.3), inset -8px -8px 20px rgba(0, 0, 0, 0.2);
+  animation: moonGlow 4s ease-in-out infinite alternate;
+}
+
+.moon::before {
+  content: '';
+  position: absolute;
+  top: 20%;
+  left: 25%;
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  background: rgba(0, 0, 0, 0.1);
+}
+
+.moon::after {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: 55%;
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: rgba(0, 0, 0, 0.08);
+}
+
+@keyframes moonGlow {
+  0% { box-shadow: 0 0 40px rgba(251, 191, 36, 0.5), 0 0 80px rgba(251, 191, 36, 0.3); }
+  100% { box-shadow: 0 0 60px rgba(251, 191, 36, 0.7), 0 0 120px rgba(251, 191, 36, 0.4); }
+}
+
+/* 星星 */
+.star {
+  position: absolute;
+  font-size: 20px;
+  color: #fef3c7;
+  text-shadow: 0 0 10px rgba(254, 243, 199, 0.8);
+  animation: starTwinkle 2s ease-in-out infinite;
+}
+
+.star-1 { top: 15%; left: 20%; font-size: 24px; animation-delay: 0s; }
+.star-2 { top: 25%; left: 75%; font-size: 18px; animation-delay: 0.5s; }
+.star-3 { top: 60%; left: 10%; font-size: 22px; animation-delay: 1s; }
+.star-4 { top: 70%; left: 85%; font-size: 16px; animation-delay: 1.5s; }
+.star-5 { top: 40%; left: 5%; font-size: 28px; animation-delay: 0.3s; color: #fbbf24; }
+.star-6 { top: 80%; left: 40%; font-size: 20px; animation-delay: 0.8s; }
+
+@keyframes starTwinkle {
+  0%, 100% { opacity: 1; transform: scale(1); }
+  50% { opacity: 0.4; transform: scale(0.7); }
+}
+
+/* 云朵 */
+.cloud {
+  position: absolute;
+  background: rgba(255, 255, 255, 0.08);
+  border-radius: 50px;
+  backdrop-filter: blur(4px);
+}
+
+.cloud::before,
+.cloud::after {
+  content: '';
+  position: absolute;
+  background: inherit;
+  border-radius: 50%;
+}
+
+.cloud-1 {
+  width: 100px;
+  height: 30px;
+  top: 30%;
+  left: -5%;
+  animation: cloudFloat 35s linear infinite;
+}
+.cloud-1::before { width: 40px; height: 40px; top: -20px; left: 15px; }
+.cloud-1::after { width: 50px; height: 50px; top: -25px; right: 15px; }
+
+.cloud-2 {
+  width: 80px;
+  height: 25px;
+  top: 55%;
+  right: -5%;
+  animation: cloudFloat 45s linear infinite reverse;
+}
+.cloud-2::before { width: 35px; height: 35px; top: -18px; left: 10px; }
+.cloud-2::after { width: 40px; height: 40px; top: -20px; right: 10px; }
+
+.cloud-3 {
+  width: 60px;
+  height: 20px;
+  bottom: 20%;
+  left: 30%;
+  animation: cloudFloat 40s linear infinite;
+  animation-delay: -10s;
+}
+.cloud-3::before { width: 28px; height: 28px; top: -14px; left: 8px; }
+.cloud-3::after { width: 32px; height: 32px; top: -16px; right: 8px; }
+
+@keyframes cloudFloat {
+  0% { transform: translateX(-150px); }
+  100% { transform: translateX(calc(100vw + 150px)); }
+}
+
+/* 星球 */
+.planet {
+  position: absolute;
+  bottom: 15%;
+  left: 8%;
+  width: 60px;
+  height: 60px;
+  border-radius: 50%;
+  background: radial-gradient(circle at 30% 30%, #a78bfa 0%, #7c3aed 50%, #5b21b6 100%);
+  box-shadow: 0 0 30px rgba(167, 139, 250, 0.4), inset -6px -6px 15px rgba(0, 0, 0, 0.3);
+  animation: planetFloat 8s ease-in-out infinite alternate;
+}
+
+.planet::before {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: -20%;
+  width: 140%;
+  height: 12px;
+  border-radius: 50%;
+  background: linear-gradient(90deg, transparent 0%, rgba(196, 181, 253, 0.6) 20%, rgba(196, 181, 253, 0.8) 50%, rgba(196, 181, 253, 0.6) 80%, transparent 100%);
+  transform: translateY(-50%) rotateX(75deg);
+}
+
+@keyframes planetFloat {
+  0% { transform: translateY(0) rotate(0deg); }
+  100% { transform: translateY(-20px) rotate(10deg); }
+}
+
+/* UFO */
+.ufo {
+  position: absolute;
+  top: 20%;
+  right: 25%;
+  width: 50px;
+  height: 20px;
+  animation: ufoFloat 6s ease-in-out infinite;
+}
+
+.ufo::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 24px;
+  height: 16px;
+  border-radius: 50% 50% 0 0;
+  background: linear-gradient(180deg, #67e8f9 0%, #06b6d4 100%);
+  box-shadow: 0 0 15px rgba(103, 232, 249, 0.6);
+}
+
+.ufo::after {
+  content: '';
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  width: 50px;
+  height: 12px;
+  border-radius: 50%;
+  background: linear-gradient(180deg, #94a3b8 0%, #475569 100%);
+  box-shadow: 0 4px 20px rgba(103, 232, 249, 0.4);
+}
+
+@keyframes ufoFloat {
+  0%, 100% { transform: translate(0, 0) rotate(-5deg); }
+  25% { transform: translate(30px, -20px) rotate(5deg); }
+  50% { transform: translate(60px, 10px) rotate(-5deg); }
+  75% { transform: translate(30px, -10px) rotate(5deg); }
 }
 
 </style>
