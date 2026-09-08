@@ -1,11 +1,11 @@
 <template>
   <div id="login-box" :style=" background ? 'background: var(--el-bg-color)' : ''" v-loading="oauthLoading" element-loading-text="登录中...">
     <div id="background-wrap" v-if="!settingStore.settings.background">
-      <div class="x1 cloud"></div>
-      <div class="x2 cloud"></div>
-      <div class="x3 cloud"></div>
-      <div class="x4 cloud"></div>
-      <div class="x5 cloud"></div>
+      <canvas ref="canvas" class="particle-canvas"></canvas>
+      <div class="aurora aurora-1"></div>
+      <div class="aurora aurora-2"></div>
+      <div class="aurora aurora-3"></div>
+      <div class="grid-overlay"></div>
     </div>
     <div v-else :style="background"></div>
     <div class="form-wrapper">
@@ -153,7 +153,7 @@
 <script setup>
 import router from "@/router";
 import {useRoute} from "vue-router";
-import {computed, nextTick, reactive, ref} from "vue";
+import {computed, nextTick, onMounted, onUnmounted, reactive, ref} from "vue";
 import {login} from "@/request/login.js";
 import {register} from "@/request/login.js";
 import {websiteConfig} from "@/request/setting.js";
@@ -438,6 +438,111 @@ const submit = () => {
   })
 }
 
+const canvas = ref(null);
+let particleCtx = null;
+let particleList = [];
+let particleAnimationId = null;
+const particleMouse = { x: null, y: null, r: 160 };
+
+const particleColors = ['#00e5ff', '#a855f7', '#3b82f6', '#7c3aed', '#22d3ee', '#c084fc'];
+
+function handleResize() {
+  const el = canvas.value;
+  if (!el) return;
+  el.width = window.innerWidth;
+  el.height = window.innerHeight;
+}
+
+function spawnParticle() {
+  return {
+    x: Math.random() * window.innerWidth,
+    y: Math.random() * window.innerHeight,
+    vx: (Math.random() - 0.5) * 0.45,
+    vy: (Math.random() - 0.5) * 0.45,
+    r: Math.random() * 1.8 + 0.7,
+    color: particleColors[Math.floor(Math.random() * particleColors.length)]
+  };
+}
+
+function handleMouseMove(e) {
+  particleMouse.x = e.clientX;
+  particleMouse.y = e.clientY;
+}
+
+function drawParticles() {
+  const el = canvas.value;
+  if (!el || !particleCtx) return;
+  const w = el.width;
+  const h = el.height;
+  particleCtx.clearRect(0, 0, w, h);
+
+  for (const p of particleList) {
+    p.x += p.vx;
+    p.y += p.vy;
+    if (p.x < 0 || p.x > w) p.vx *= -1;
+    if (p.y < 0 || p.y > h) p.vy *= -1;
+
+    if (particleMouse.x != null) {
+      const dx = particleMouse.x - p.x;
+      const dy = particleMouse.y - p.y;
+      const dist = Math.hypot(dx, dy);
+      if (dist < particleMouse.r) {
+        const f = ((particleMouse.r - dist) / particleMouse.r) * 0.04;
+        p.x -= dx * f;
+        p.y -= dy * f;
+      }
+    }
+
+    particleCtx.beginPath();
+    particleCtx.arc(p.x, p.y, p.r, 0, Math.PI * 2);
+    particleCtx.fillStyle = p.color;
+    particleCtx.shadowBlur = 8;
+    particleCtx.shadowColor = p.color;
+    particleCtx.fill();
+    particleCtx.shadowBlur = 0;
+  }
+
+  const linkDist = 120;
+  for (let i = 0; i < particleList.length; i++) {
+    for (let j = i + 1; j < particleList.length; j++) {
+      const a = particleList[i];
+      const b = particleList[j];
+      const d = Math.hypot(a.x - b.x, a.y - b.y);
+      if (d < linkDist) {
+        const alpha = (1 - d / linkDist) * 0.35;
+        particleCtx.strokeStyle = `rgba(148, 180, 255, ${alpha})`;
+        particleCtx.lineWidth = 0.6;
+        particleCtx.beginPath();
+        particleCtx.moveTo(a.x, a.y);
+        particleCtx.lineTo(b.x, b.y);
+        particleCtx.stroke();
+      }
+    }
+  }
+
+  particleAnimationId = requestAnimationFrame(drawParticles);
+}
+
+function initParticles() {
+  const el = canvas.value;
+  if (!el) return;
+  particleCtx = el.getContext('2d');
+  handleResize();
+  const count = Math.min(150, Math.floor((window.innerWidth * window.innerHeight) / 11000));
+  particleList = Array.from({ length: count }, spawnParticle);
+  window.addEventListener('resize', handleResize);
+  window.addEventListener('mousemove', handleMouseMove);
+  drawParticles();
+}
+
+onMounted(initParticles);
+
+onUnmounted(() => {
+  cancelAnimationFrame(particleAnimationId);
+  window.removeEventListener('resize', handleResize);
+  window.removeEventListener('mousemove', handleMouseMove);
+});
+
 async function saveToken(token) {
   localStorage.setItem('token', token)
   refreshWebsiteConfig()
@@ -646,76 +751,126 @@ function submitRegister() {
 }
 
 .container {
-  background: v-bind(loginOpacity);
+  background: rgba(12, 18, 40, 0.5);
+  backdrop-filter: blur(22px) saturate(140%);
+  -webkit-backdrop-filter: blur(22px) saturate(140%);
   padding-left: 40px;
   padding-right: 40px;
   display: flex;
   flex-direction: column;
   justify-content: center;
-  width: 450px;
+  width: 460px;
   height: 100%;
-  border-left: 1px solid var(--login-border);
-  box-shadow: var(--el-box-shadow-light);
+  border: 1px solid rgba(120, 180, 255, 0.18);
+  border-right: none;
+  box-shadow: -12px 0 60px rgba(0, 0, 0, 0.45), inset 0 0 60px rgba(99, 102, 241, 0.06);
+  color: #e6ecff;
   @media (max-width: 1024px) {
-    padding: 20px 18px;
-    width: 384px;
+    padding: 24px 22px;
+    width: 400px;
     margin-left: 18px;
+    border-radius: 20px;
+    border-right: 1px solid rgba(120, 180, 255, 0.18);
   }
   @media (max-width: 767px) {
-    border: 1px solid var(--login-border);
-    padding: 20px 18px;
-    border-radius: 6px;
+    border: 1px solid rgba(120, 180, 255, 0.22);
+    padding: 26px 20px;
+    border-radius: 20px;
     height: fit-content;
-    width: 100%;
+    width: calc(100% - 36px);
     margin-right: 18px;
     margin-left: 18px;
+    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.55);
   }
 
   .btn {
-    height: 36px;
+    height: 42px;
     width: 100%;
-    border-radius: 6px;
+    border-radius: 12px;
+    font-weight: 600;
+    letter-spacing: 1px;
+    border: none;
+    background: linear-gradient(120deg, #2563eb, #7c3aed) !important;
+    box-shadow: 0 8px 24px rgba(99, 102, 241, 0.45);
+    transition: transform .15s ease, box-shadow .15s ease;
+    &:hover {
+      transform: translateY(-1px);
+      box-shadow: 0 12px 30px rgba(99, 102, 241, 0.6);
+    }
   }
 
   .form-desc {
     margin-top: 5px;
-    margin-bottom: 18px;
-    color: var(--form-desc-color);
+    margin-bottom: 20px;
+    color: rgba(230, 236, 255, 0.6);
   }
 
   .form-title {
-    font-weight: bold;
-    font-size: 22px !important;
+    font-weight: 700;
+    font-size: 26px !important;
+    letter-spacing: 1px;
+    background: linear-gradient(90deg, #22d3ee, #a855f7, #22d3ee);
+    background-size: 200% auto;
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+    animation: titleShine 6s linear infinite;
   }
 
   .switch {
     margin-top: 20px;
     text-align: center;
+    color: rgba(230, 236, 255, 0.7);
 
     span {
-      color: var(--login-switch-color);
+      color: #38bdf8;
       cursor: pointer;
+      &:hover {
+        text-shadow: 0 0 12px rgba(56, 189, 248, 0.8);
+      }
     }
   }
 
   :deep(.el-input__wrapper) {
-    border-radius: 6px;
-    background: var(--el-bg-color);
+    border-radius: 12px;
+    background: rgba(255, 255, 255, 0.05);
+    box-shadow: 0 0 0 1px rgba(120, 180, 255, 0.22) inset;
+    transition: box-shadow .2s ease, background .2s ease;
+    &:hover, &.is-focus {
+      background: rgba(255, 255, 255, 0.08);
+      box-shadow: 0 0 0 1px rgba(56, 189, 248, 0.6) inset, 0 0 18px rgba(56, 189, 248, 0.2);
+    }
+  }
+
+  :deep(.el-input__inner) {
+    color: #e6ecff;
+    &::placeholder {
+      color: rgba(230, 236, 255, 0.4);
+    }
   }
 
   .email-input :deep(.el-input__wrapper) {
-    border-radius: 6px 0 0 6px;
-    background: var(--el-bg-color);
+    border-radius: 12px 0 0 12px;
+    background: rgba(255, 255, 255, 0.05);
   }
 
   .el-input {
-    height: 38px;
+    height: 42px;
     width: 100%;
     margin-bottom: 18px;
 
     :deep(.el-input__inner) {
-      height: 36px;
+      height: 40px;
     }
+  }
+}
+
+@keyframes titleShine {
+  0% {
+    background-position: 0% center;
+  }
+  100% {
+    background-position: 200% center;
   }
 }
 
@@ -796,88 +951,94 @@ function submitRegister() {
 
 
 #login-box {
-  background: linear-gradient(to bottom, #2980b9, #6dd5fa, #fff);
+  background:
+    radial-gradient(ellipse at 15% 15%, rgba(56, 120, 255, 0.18) 0%, transparent 55%),
+    radial-gradient(ellipse at 85% 85%, rgba(168, 85, 247, 0.20) 0%, transparent 55%),
+    radial-gradient(ellipse at 70% 20%, rgba(34, 211, 238, 0.12) 0%, transparent 50%),
+    linear-gradient(135deg, #05070f 0%, #0a1024 45%, #140b2e 100%);
   font: 100% Arial, sans-serif;
   height: 100%;
   margin: 0;
   padding: 0;
-  overflow-x: hidden;
+  overflow: hidden;
   display: grid;
   grid-template-columns: 1fr;
 }
 
 
 #background-wrap {
-  height: 100%;
+  position: fixed;
+  inset: 0;
   z-index: 0;
+  overflow: hidden;
 }
 
-@keyframes animateCloud {
-  0% {
-    margin-left: -500px;
-  }
-
-  100% {
-    margin-left: 100%;
-  }
-}
-
-.x1 {
-  animation: animateCloud 30s linear infinite;
-  transform: scale(0.65);
-}
-
-.x2 {
-  animation: animateCloud 15s linear infinite;
-  transform: scale(0.3);
-}
-
-.x3 {
-  animation: animateCloud 25s linear infinite;
-  transform: scale(0.5);
-}
-
-.x4 {
-  animation: animateCloud 13s linear infinite;
-  transform: scale(0.4);
-}
-
-.x5 {
-  animation: animateCloud 20s linear infinite;
-  transform: scale(0.55);
-}
-
-.cloud {
-  background: linear-gradient(to bottom, #fff 5%, #f1f1f1 100%);
-  border-radius: 100px;
-  box-shadow: 0 8px 5px rgba(0, 0, 0, 0.1);
-  height: 120px;
-  width: 350px;
-  position: relative;
-}
-
-.cloud:after,
-.cloud:before {
-  content: "";
+.particle-canvas {
   position: absolute;
-  background: #fff;
-  z-index: -1;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  display: block;
 }
 
-.cloud:after {
-  border-radius: 100px;
-  height: 100px;
-  left: 50px;
-  top: -50px;
-  width: 100px;
+.aurora {
+  position: absolute;
+  border-radius: 50%;
+  filter: blur(90px);
+  opacity: 0.5;
+  pointer-events: none;
+  mix-blend-mode: screen;
 }
 
-.cloud:before {
-  border-radius: 200px;
-  height: 180px;
-  width: 180px;
-  right: 50px;
-  top: -90px;
+.aurora-1 {
+  width: 560px;
+  height: 560px;
+  background: radial-gradient(circle, rgba(34, 211, 238, 0.55) 0%, transparent 70%);
+  top: -12%;
+  left: -8%;
+  animation: auroraFloat 22s ease-in-out infinite alternate;
+}
+
+.aurora-2 {
+  width: 680px;
+  height: 680px;
+  background: radial-gradient(circle, rgba(168, 85, 247, 0.5) 0%, transparent 70%);
+  bottom: -18%;
+  right: -8%;
+  animation: auroraFloat 26s ease-in-out infinite alternate-reverse;
+}
+
+.aurora-3 {
+  width: 440px;
+  height: 440px;
+  background: radial-gradient(circle, rgba(59, 130, 246, 0.5) 0%, transparent 70%);
+  top: 42%;
+  left: 48%;
+  animation: auroraFloat 30s ease-in-out infinite alternate;
+}
+
+@keyframes auroraFloat {
+  0% {
+    transform: translate(0, 0) scale(1);
+  }
+  50% {
+    transform: translate(40px, -30px) scale(1.08);
+  }
+  100% {
+    transform: translate(-30px, 40px) scale(0.95);
+  }
+}
+
+.grid-overlay {
+  position: absolute;
+  inset: 0;
+  background-image:
+    linear-gradient(rgba(120, 180, 255, 0.06) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(120, 180, 255, 0.06) 1px, transparent 1px);
+  background-size: 60px 60px;
+  mask-image: radial-gradient(ellipse at 50% 50%, #000 0%, transparent 75%);
+  -webkit-mask-image: radial-gradient(ellipse at 50% 50%, #000 0%, transparent 75%);
+  pointer-events: none;
 }
 
 </style>
