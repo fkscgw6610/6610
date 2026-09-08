@@ -117,12 +117,6 @@
             {{ p.label }}
           </el-button>
         </div>
-        <template v-if="settingStore.settings.register === 0">
-          <div class="switch" @click="show = 'register'" v-if="show === 'login'">{{ $t('noAccount') }}
-            <span>{{ $t('regSwitch') }}</span></div>
-          <div class="switch" @click="show = 'login'" v-else>{{ $t('hasAccount') }} <span>{{ $t('loginSwitch') }}</span>
-          </div>
-        </template>
       </div>
     </div>
     <el-dialog class="bind-dialog" v-model="showBindForm"  title="注册邮箱" >
@@ -159,10 +153,7 @@
         </el-button>
       </div>
     </el-dialog>
-    <a v-show="settingStore.settings.projectLink" class="github" href="https://github.com/maillab/cloud-mail">
-      <Icon icon="mingcute:github-line" color="#1890ff" width="20" height="20" />
-    </a>
-  </div>
+    </div>
 </template>
 
 <script setup>
@@ -904,23 +895,6 @@ function submitRegister() {
 .setting-icon {
   position: relative;
   top: 6px;
-}
-
-.github {
-  position: fixed;
-  width: 35px;
-  height: 35px;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  border-radius: 50%;
-  background: var(--el-bg-color);
-  bottom: 10px;
-  right: 10px;
-  z-index: 1000;
-  border: 1px solid var(--el-border-color-light);
-  box-shadow: var(--el-box-shadow-light);
-  cursor: pointer;
 }
 
 :deep(.el-input-group__append) {
